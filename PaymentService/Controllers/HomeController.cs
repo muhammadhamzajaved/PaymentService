@@ -29,15 +29,31 @@ namespace PaymentService.Controllers
         [Route("api/paymentservice/pay")]
         public async Task<IActionResult> Payment(PaymentModel payment)
         {
-            if (_validateUser.ValidarteParameters(payment))
+            if (_validateUser.ValidatePaymentParameters(payment))
             {
                 string status = await _makePayment.PayAsync(payment, secretKey);
                 if (status != "Success")
                     return BadRequest(status);
                 return Ok(status);
             }
-            else
-                return BadRequest("Wrong parameters!");
+
+            return BadRequest("Wrong parameters!");
+        }
+
+
+        [Route("api/paymentservice/validate")]
+        public async Task<IActionResult> ValidateCard(PaymentModel payment)
+        {
+            if (_validateUser.ValidateCardParameters(payment))
+            {
+                string r = await _makePayment.ValidateCard(payment, secretKey);
+                if (r == "Success")
+                    return Ok("Card is Valid");
+                else
+                    return BadRequest(r);
+            }
+
+            return BadRequest("Wrong parameters!");
         }
     }
 }

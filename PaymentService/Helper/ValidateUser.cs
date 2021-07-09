@@ -8,12 +8,30 @@ namespace PaymentService.Helper
 {
     public class ValidateUser
     {
-        public bool ValidarteParameters(PaymentModel model)
+        public bool ValidatePaymentParameters(PaymentModel model)
         {
-            if(!string.IsNullOrEmpty(model.cardNumber) && !string.IsNullOrEmpty(model.cvc)
-                && !string.IsNullOrEmpty(model.userEmail) && model.expiryMonth != null
-                && model.expiryYear != null && model.value != null)
-                return true;
+            if (!string.IsNullOrEmpty(model.cardNumber)
+                && !string.IsNullOrEmpty(model.cvc)
+                && !string.IsNullOrEmpty(model.userEmail)
+                && !string.IsNullOrEmpty(model.expiry)
+                && model.value != null
+                && !string.IsNullOrEmpty(model.currency))
+            {
+                if (model.expiry.Contains('/'))
+                    return true;
+            }
+
+            return false;
+        }
+        public bool ValidateCardParameters(PaymentModel model)
+        {
+            if (!string.IsNullOrEmpty(model.cardNumber)
+                && !string.IsNullOrEmpty(model.cvc)
+                && !string.IsNullOrEmpty(model.expiry))
+            {
+                if(model.expiry.Contains('/'))
+                    return true;
+            }
 
             return false;
         }

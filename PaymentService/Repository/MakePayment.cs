@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using PaymentService.Helper;
@@ -13,6 +14,7 @@ namespace PaymentService.Repository
         {
             try
             {
+                string[] expiry = payment.expiry.Split('/');
                 StripeConfiguration.ApiKey = secretKey;
 
                 var tokenOptions = new TokenCreateOptions
@@ -20,8 +22,8 @@ namespace PaymentService.Repository
                     Card = new TokenCardOptions
                     {
                         Number = payment.cardNumber,
-                        ExpMonth = payment.expiryMonth,
-                        ExpYear = payment.expiryYear,
+                        ExpMonth = Convert.ToInt32(expiry[0]),
+                        ExpYear = Convert.ToInt32(expiry[1]),
                         Cvc = payment.cvc
                     }
                 };
@@ -34,7 +36,7 @@ namespace PaymentService.Repository
                     Amount = payment.value,
                     Description = "Microservice Test Payment",
                     ReceiptEmail = payment.userEmail,
-                    Currency = "eur",
+                    Currency = payment.currency,
                     Source = stripeToken.Id // the card
                 };
 
@@ -46,6 +48,34 @@ namespace PaymentService.Repository
                 else
                     return "Failed";
 
+            }
+            catch (Exception ex)
+            {
+                return ex.Message;
+            }
+        }
+
+        public async Task<string> ValidateCard(PaymentModel payment, string secretKey)
+        {
+            try
+            {
+                StripeConfiguration.ApiKey = secretKey;
+
+                string[] expiry = payment.expiry.Split('/');
+                var tokenOptions = new TokenCreateOptions
+                {
+                    Card = new TokenCardOptions
+                    {
+                        Number = payment.cardNumber,
+                        ExpMonth = Convert.ToInt32(expiry[0]),
+                        ExpYear = Convert.ToInt32(expiry[1]),
+                        Cvc = payment.cvc
+                    }
+                };
+
+                var serviceToken = new TokenService();
+                Token stripeToken = await serviceToken.CreateAsync(tokenOptions);
+                return "Success";
             }
             catch (Exception ex)
             {
